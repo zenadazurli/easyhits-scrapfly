@@ -2,37 +2,20 @@ from scrapfly import ScrapflyClient, ScrapeConfig
 import json
 import os
 
-# Configurazione
-API_KEY = os.environ.get("SCRAPFLY_API_KEY", "scp-live-22b86f07211a42ae977a933e7c525485")
+API_KEY = os.environ.get("SCRAPFLY_API_KEY", "scp-live-dc9220813c2944c49af55e5857eb2992")
 EMAIL = "sandrominori50+ulugarecexisa@gmail.com"
 PASSWORD = "DDnmVV45!!"
 
-# JavaScript scenario per gestire il login e il redirect
-javascript_scenario = """
-    // Attende che il campo username sia presente
-    await page.waitForSelector('input[name="username"]', { timeout: 30000 });
-    
-    // Compila il form
-    await page.type('input[name="username"]', 'sandrominori50+ulugarecexisa@gmail.com');
-    await page.type('input[name="password"]', 'DDnmVV45!!');
-    
-    // Tenta il login
-    await page.click('button.btn_green');
-    
-    // Aspetta che la pagina di warning (se presente) sia caricata
-    await page.waitForTimeout(5000);
-    
-    // Se l'URL contiene 'warning', fai un secondo tentativo di click
-    if (page.url().includes('warning')) {
-        await page.click('button.btn_green');
-    }
-    
-    // Aspetta che la navigazione sia completata e che l'URL finale sia quello della dashboard
-    await page.waitForFunction(
-        () => window.location.href.includes('/account/'),
-        { timeout: 60000, polling: 1000 }
-    );
-"""
+# usa js_scenario, NON javascript_scenario
+js_scenario = [
+    {"wait": 3000},
+    {"fill": {"selector": "input[name='username']", "value": EMAIL}},
+    {"fill": {"selector": "input[name='password']", "value": PASSWORD}},
+    {"click": {"selector": "button.btn_green"}},
+    {"wait": 5000},
+    {"click": {"selector": "button.btn_green"}},
+    {"wait_for_navigation": {"timeout": 10000}}  # max 10 secondi
+]
 
 print("🚀 Avvio login con Scrapfly...")
 
@@ -45,8 +28,8 @@ try:
         asp=True,
         proxy_pool="public_residential_pool",
         country="it",
-        javascript_scenario=javascript_scenario,
-        session="easyhits_final_js",
+        js_scenario=js_scenario,          # <-- PARAMETRO CORRETTO
+        session="easyhits_final",
         rendering_wait=5000,
     ))
     
